@@ -41,14 +41,20 @@ namespace Tournament.Api.Controllers
         // PUT: api/Games/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutGame(int id, Game game)
+        public async Task<IActionResult> PutGame(int id, GameUpdateDto game)
         {
             if (id != game.Id)
             {
                 return BadRequest();
             }
+            var existingGame = await UoW.GameRepository.GetByIdAsync(id);
+            if (existingGame == null)
+            {
+                return NotFound();
+            }
+            mapper.Map(game, existingGame);
 
-            UoW.GameRepository.Update(game);
+            UoW.GameRepository.Update(existingGame);
 
             try
             {
@@ -72,7 +78,7 @@ namespace Tournament.Api.Controllers
         // POST: api/Games
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<GameDto>> PostGame(GameDto dto)
+        public async Task<ActionResult<GameDto>> PostGame(GameCreateDto dto)
         {
             var game = mapper.Map<Game>(dto);
             UoW.GameRepository.Add(game);

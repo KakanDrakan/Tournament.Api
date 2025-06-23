@@ -5,7 +5,7 @@
 namespace Tournament.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class renamedtournamenttable : Migration
+    public partial class RenamedTournamentTable : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

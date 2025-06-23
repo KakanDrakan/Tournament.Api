@@ -13,7 +13,7 @@ namespace Tournament.Data.Migrations
 {
     [DbContext(typeof(TournamentApiContext))]
     [Migration("20250619122542_init")]
-    partial class init
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

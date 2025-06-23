@@ -13,7 +13,7 @@ namespace Tournament.Data.Migrations
 {
     [DbContext(typeof(TournamentApiContext))]
     [Migration("20250619122851_renamed tournament table")]
-    partial class renamedtournamenttable
+    partial class RenamedTournamentTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

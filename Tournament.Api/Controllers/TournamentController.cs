@@ -19,9 +19,10 @@ namespace Tournament.Api.Controllers
     {
         // GET: api/TournamentDetails
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TournamentDto>>> GetTournamentDetails()
+        public async Task<ActionResult<IEnumerable<TournamentDto>>> GetTournamentDetails(bool includeGames)
         {
-            return Ok(mapper.Map<IEnumerable<TournamentDto>>(await UoW.TournamentRepository.GetAllAsync()));
+            var tournaments = mapper.Map<IEnumerable<TournamentDto>>(await UoW.TournamentRepository.GetAllAsync(includeGames));
+            return Ok(tournaments);
         }
 
         // GET: api/TournamentDetails/5
@@ -41,14 +42,21 @@ namespace Tournament.Api.Controllers
         // PUT: api/TournamentDetails/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutTournamentDetails(int id, Core.Entities.Tournament tournamentDetails)
+        public async Task<IActionResult> PutTournamentDetails(int id, TournamentUpdateDto tournament)
         {
-            if (id != tournamentDetails.Id)
+            if (id != tournament.Id)
             {
                 return BadRequest();
             }
+            var existingTournament = await UoW.TournamentRepository.GetByIdAsync(id);
 
-            UoW.TournamentRepository.Update(tournamentDetails);
+            if (existingTournament == null)
+            {
+                return NotFound();
+            }
+            mapper.Map(tournament, existingTournament);
+
+            UoW.TournamentRepository.Update(existingTournament);
 
             try
             {
@@ -72,7 +80,7 @@ namespace Tournament.Api.Controllers
         // POST: api/TournamentDetails
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<TournamentDto>> PostTournamentDetails(TournamentDto tournamentDto)
+        public async Task<ActionResult<TournamentDto>> PostTournamentDetails(TournamentCreateDto tournamentDto)
         {
             var tournament = mapper.Map<Core.Entities.Tournament>(tournamentDto);
             UoW.TournamentRepository.Add(tournament);

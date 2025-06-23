@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,18 +22,21 @@ namespace Tournament.Data.Repositories
             return await context.Tournament.AnyAsync(t => t.Id == id);
         }
 
-        public async Task<IEnumerable<Core.Entities.Tournament>> GetAllAsync()
+        public async Task<IEnumerable<Core.Entities.Tournament>> GetAllAsync(bool includeGames)
         {
-            return await context.Tournament
-                .Include(t => t.Games) // Assuming Tournament has a collection of Games
-                .ToListAsync();
+            var query = context.Tournament.AsQueryable();
+            if (includeGames)
+            {
+                query = query.Include(t => t.Games);
+            }
+            return await query.ToListAsync();
         }
 
         public async Task<Core.Entities.Tournament> GetByIdAsync(int id)
         {
             return await context.Tournament
-                .Include(t => t.Games) // Assuming Tournament has a collection of Games
-                .FirstOrDefaultAsync(t => t.Id == id) 
+                .Include(t => t.Games)
+                .FirstOrDefaultAsync(t => t.Id == id)
                 ?? throw new KeyNotFoundException($"Tournament with ID {id} not found.");
         }
 

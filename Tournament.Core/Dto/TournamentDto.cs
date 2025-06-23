@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 
 namespace Tournament.Core.Dto
 {
-    public class TournamentDto
+    public record TournamentDto
     {
-        public string Title { get; set; }
-        public DateTime StartTime { get; set; }
-        public DateTime EndTime => StartTime.AddMonths(3);
+        public string? Title { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate => StartDate.AddMonths(3);
+        public IEnumerable<GameDto>? Games { get; set; } = [];
     }
 }
