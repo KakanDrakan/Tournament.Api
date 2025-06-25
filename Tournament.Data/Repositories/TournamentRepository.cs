@@ -22,12 +22,16 @@ namespace Tournament.Data.Repositories
             return await context.Tournament.AnyAsync(t => t.Id == id);
         }
 
-        public async Task<IEnumerable<Core.Entities.Tournament>> GetAllAsync(bool includeGames)
+        public async Task<IEnumerable<Core.Entities.Tournament>> GetAllAsync(bool includeGames, bool orderedByTitle)
         {
             var query = context.Tournament.AsQueryable();
             if (includeGames)
             {
                 query = query.Include(t => t.Games);
+            }
+            if (orderedByTitle)
+            {
+                query = query.OrderBy(t => t.Title);
             }
             return await query.ToListAsync();
         }

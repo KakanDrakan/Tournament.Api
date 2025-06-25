@@ -20,9 +20,9 @@ namespace Tournament.Api.Controllers
     {
         // GET: api/TournamentDetails
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TournamentDto>>> GetTournamentDetails(bool includeGames)
+        public async Task<ActionResult<IEnumerable<TournamentDto>>> GetTournamentDetails(bool includeGames, bool orderedByTitle)
         {
-            var tournaments = mapper.Map<IEnumerable<TournamentDto>>(await UoW.TournamentRepository.GetAllAsync(includeGames));
+            var tournaments = mapper.Map<IEnumerable<TournamentDto>>(await UoW.TournamentRepository.GetAllAsync(includeGames, orderedByTitle));
             return Ok(tournaments);
         }
 
@@ -133,6 +133,11 @@ namespace Tournament.Api.Controllers
         [HttpPatch("{id}")]
         public async Task<IActionResult> PatchTournamentDetails(int id, JsonPatchDocument<TournamentUpdateDto> patchDoc)
         {
+            if(patchDoc == null)
+            {
+                return BadRequest("Patch document cannot be null.");
+            }
+
             var tournament = await UoW.TournamentRepository.GetByIdAsync(id);
             if (tournament == null)
             {
@@ -142,13 +147,13 @@ namespace Tournament.Api.Controllers
             var tournamentToPatch = mapper.Map<TournamentUpdateDto>(tournament);
             patchDoc.ApplyTo(tournamentToPatch, ModelState);
 
+            TryValidateModel(tournamentToPatch);
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
             mapper.Map(tournamentToPatch, tournament);
-            UoW.TournamentRepository.Update(tournament);
 
             try
             {

@@ -11,8 +11,9 @@ namespace Tournament.Core.Repositories
     {
         void Add(Game game);
         Task<bool> AnyAsync(int id);
-        Task<IEnumerable<Game>> GetAllAsync(int? tournamentId);
+        Task<IEnumerable<Game>> GetAllAsync(int? tournamentId, bool orderedByTitle);
         Task<Game> GetByIdAsync(int id);
+        Task<Game> GetByTitleAsync(string title);
         void Remove(Game game);
         void Update(Game game);
     }
