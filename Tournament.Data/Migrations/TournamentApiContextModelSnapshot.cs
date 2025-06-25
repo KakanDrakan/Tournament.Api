@@ -44,7 +44,7 @@ namespace Tournament.Data.Migrations
 
                     b.HasIndex("TournamentId");
 
-                    b.ToTable("Game");
+                    b.ToTable("Game", (string)null);
                 });
 
             modelBuilder.Entity("Tournament.Core.Entities.Tournament", b =>
@@ -64,7 +64,7 @@ namespace Tournament.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Tournament");
+                    b.ToTable("Tournament", (string)null);
                 });
 
             modelBuilder.Entity("Tournament.Core.Entities.Game", b =>

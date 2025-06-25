@@ -10,18 +10,21 @@ using Tournament.Core.Entities;
 using Tournament.Core.Repositories;
 using AutoMapper;
 using Tournament.Core.Dto;
+using System.Runtime.CompilerServices;
 
 namespace Tournament.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/tournament/{tournamentId}/games")]
     [ApiController]
     public class GamesController(IUnitOfWork UoW, IMapper mapper) : ControllerBase
     {
         // GET: api/Games
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<GameDto>>> GetGame()
+        public async Task<ActionResult<IEnumerable<GameDto>>> GetGames(int tournamentId)
         {
-            return Ok(mapper.Map<IEnumerable<GameDto>>(await UoW.GameRepository.GetAllAsync()));
+            var games = mapper.Map<IEnumerable<GameDto>>(await UoW.GameRepository.GetAllAsync(tournamentId));
+
+            return Ok(games);
         }
 
         // GET: api/Games/5
@@ -60,7 +63,7 @@ namespace Tournament.Api.Controllers
             {
                 await UoW.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception)
             {
                 if (!await GameExists(id))
                 {
@@ -68,7 +71,7 @@ namespace Tournament.Api.Controllers
                 }
                 else
                 {
-                    throw;
+                    return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while updating the database.");
                 }
             }
 
@@ -78,14 +81,29 @@ namespace Tournament.Api.Controllers
         // POST: api/Games
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<GameDto>> PostGame(GameCreateDto dto)
+        public async Task<ActionResult<GameDto>> PostGame(int tournamentId, GameCreateDto dto)
         {
             var game = mapper.Map<Game>(dto);
+            game.TournamentId = tournamentId;
             UoW.GameRepository.Add(game);
-            await UoW.SaveChangesAsync();
+            try
+            {
+                await UoW.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                if (await GameExists(game.Id))
+                {
+                    return Conflict("A game with the same ID already exists.");
+                }
+                else
+                {
+                    return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while saving to the database.");
+                }
+            }
 
             var createdGame = mapper.Map<GameDto>(game);
-            return CreatedAtAction("GetGame", new { id = game.Id, createdGame}, game);
+            return CreatedAtAction(nameof(GetGames), new { id = game.Id, createdGame }, createdGame);
         }
 
         // DELETE: api/Games/5
@@ -99,7 +117,14 @@ namespace Tournament.Api.Controllers
             }
 
             UoW.GameRepository.Remove(game);
-            await UoW.SaveChangesAsync();
+            try 
+            { 
+                await UoW.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while saving to the database.");
+            }
 
             return NoContent();
         }

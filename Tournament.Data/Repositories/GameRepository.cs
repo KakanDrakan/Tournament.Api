@@ -19,8 +19,14 @@ namespace Tournament.Data.Repositories
         {
             return await context.Game.AnyAsync(g => g.Id == id);
         }
-        public async Task<IEnumerable<Core.Entities.Game>> GetAllAsync()
+        public async Task<IEnumerable<Core.Entities.Game>> GetAllAsync(int? tournamentId)
         {
+            if(tournamentId.HasValue)
+            {
+                return await context.Game
+                    .Where(g => g.TournamentId == tournamentId.Value)
+                    .ToListAsync();
+            }
             return await context.Game.ToListAsync();
         }
         public async Task<Core.Entities.Game> GetByIdAsync(int id)

@@ -10,6 +10,7 @@ using Tournament.Core.Entities;
 using Tournament.Core.Repositories;
 using AutoMapper;
 using Tournament.Core.Dto;
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace Tournament.Api.Controllers
 {
@@ -64,7 +65,7 @@ namespace Tournament.Api.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!await TournamentDetailsExists(id))
+                if (!await TournamentExists(id))
                 {
                     return NotFound();
                 }
@@ -84,10 +85,25 @@ namespace Tournament.Api.Controllers
         {
             var tournament = mapper.Map<Core.Entities.Tournament>(tournamentDto);
             UoW.TournamentRepository.Add(tournament);
-            await UoW.SaveChangesAsync();
+            
+            try 
+            { 
+                await UoW.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                if (await TournamentExists(tournament.Id))
+                {
+                    return Conflict("A tournament with that Id already exists.");
+                }
+                else
+                {
+                    return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while saving the tournament");
+                }
+            }
 
             var createdTournament = mapper.Map<TournamentDto>(tournament);
-            return CreatedAtAction("GetTournamentDetails", new { id = tournament.Id }, createdTournament);
+            return CreatedAtAction(nameof(GetTournamentDetails), new { id = tournament.Id }, createdTournament);
         }
 
         // DELETE: api/TournamentDetails/5
@@ -101,12 +117,58 @@ namespace Tournament.Api.Controllers
             }
 
             UoW.TournamentRepository.Remove(tournamentDetails);
-            await UoW.SaveChangesAsync();
+
+            try 
+            {
+                await UoW.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while deleting the tournament: {ex.Message}");
+            }
 
             return NoContent();
         }
 
-        private async Task<bool> TournamentDetailsExists(int id)
+        [HttpPatch("{id}")]
+        public async Task<IActionResult> PatchTournamentDetails(int id, JsonPatchDocument<TournamentUpdateDto> patchDoc)
+        {
+            var tournament = await UoW.TournamentRepository.GetByIdAsync(id);
+            if (tournament == null)
+            {
+                return NotFound();
+            }
+
+            var tournamentToPatch = mapper.Map<TournamentUpdateDto>(tournament);
+            patchDoc.ApplyTo(tournamentToPatch, ModelState);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            mapper.Map(tournamentToPatch, tournament);
+            UoW.TournamentRepository.Update(tournament);
+
+            try
+            {
+                await UoW.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!await TournamentExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return NoContent();
+        }
+
+        private async Task<bool> TournamentExists(int id)
         {
             return await UoW.TournamentRepository.AnyAsync(id);
         }

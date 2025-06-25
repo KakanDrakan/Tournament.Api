@@ -8,5 +8,6 @@ namespace Tournament.Core.Dto
 {
     public record TournamentCreateDto : TournamentInputDto
     {
+        public IEnumerable<GameDto>? Games { get; set; } = [];
     }
 }
