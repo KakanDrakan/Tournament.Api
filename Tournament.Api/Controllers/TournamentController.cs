@@ -11,6 +11,7 @@ using Tournament.Core.Repositories;
 using AutoMapper;
 using Tournament.Core.Dto;
 using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Tournament.Api.Controllers
 {
@@ -20,9 +21,13 @@ namespace Tournament.Api.Controllers
     {
         // GET: api/TournamentDetails
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TournamentDto>>> GetTournamentDetails(bool includeGames, bool orderedByTitle)
+        public async Task<ActionResult<IEnumerable<TournamentDto>>> GetTournamentDetails([FromQuery]GetTournamentQueryDto dto)
         {
-            var tournaments = mapper.Map<IEnumerable<TournamentDto>>(await UoW.TournamentRepository.GetAllAsync(includeGames, orderedByTitle));
+            var tournaments = mapper.Map<IEnumerable<TournamentDto>>(await UoW.TournamentRepository.GetAllAsync(dto));
+            if (!tournaments.Any())
+            { 
+                return (!dto.Title.IsNullOrEmpty() || dto.FromYear.HasValue || dto.ToYear.HasValue) ? NotFound("Could not find any tournaments with those restrictions.") : NotFound("There are no tournaments in the database"); 
+            }
             return Ok(tournaments);
         }
 
@@ -85,9 +90,9 @@ namespace Tournament.Api.Controllers
         {
             var tournament = mapper.Map<Core.Entities.Tournament>(tournamentDto);
             UoW.TournamentRepository.Add(tournament);
-            
-            try 
-            { 
+
+            try
+            {
                 await UoW.SaveChangesAsync();
             }
             catch (DbUpdateException)
@@ -118,7 +123,7 @@ namespace Tournament.Api.Controllers
 
             UoW.TournamentRepository.Remove(tournamentDetails);
 
-            try 
+            try
             {
                 await UoW.SaveChangesAsync();
             }
@@ -133,7 +138,7 @@ namespace Tournament.Api.Controllers
         [HttpPatch("{id}")]
         public async Task<IActionResult> PatchTournamentDetails(int id, JsonPatchDocument<TournamentUpdateDto> patchDoc)
         {
-            if(patchDoc == null)
+            if (patchDoc == null)
             {
                 return BadRequest("Patch document cannot be null.");
             }

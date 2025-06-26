@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Tournament.Core.Dto;
 using Tournament.Core.Repositories;
 using Tournament.Data.Data;
 
@@ -22,16 +23,28 @@ namespace Tournament.Data.Repositories
             return await context.Tournament.AnyAsync(t => t.Id == id);
         }
 
-        public async Task<IEnumerable<Core.Entities.Tournament>> GetAllAsync(bool includeGames, bool orderedByTitle)
+        public async Task<IEnumerable<Core.Entities.Tournament>> GetAllAsync(GetTournamentQueryDto dto)
         {
             var query = context.Tournament.AsQueryable();
-            if (includeGames)
+            if (dto.IncludeGames)
             {
                 query = query.Include(t => t.Games);
             }
-            if (orderedByTitle)
+            if (!string.IsNullOrEmpty(dto.Title))
             {
-                query = query.OrderBy(t => t.Title);
+                query = query.Where(t => t.Title.Contains(dto.Title));
+            }
+            if (dto.FromYear.HasValue)
+            {
+                query = query.Where(t => t.StartDate.Year >= dto.FromYear);
+            }
+            if (dto.ToYear.HasValue)
+            {
+                query = query.Where(t => t.StartDate.Year <= dto.ToYear);
+            }
+            if (dto.OrderByTitle)
+            {
+                query = dto.Descending ? query.OrderByDescending(t => t.Title) : query.OrderBy(t => t.Title);
             }
             return await query.ToListAsync();
         }
