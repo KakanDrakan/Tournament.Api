@@ -6,15 +6,12 @@ using System.Threading.Tasks;
 
 namespace Tournament.Core.Dto
 {
-    public record GetTournamentQueryDto
+    public record GetGameQueryDto
     {
         public string? Title { get; set; }
-        public int? FromYear { get; set; }
-        public int? ToYear { get; set; }
         public bool OrderByTitle { get; set; } = false;
         public bool Descending { get; set; } = false;
         public int? PageSize { get; set; } = 0;
         public int? SkipFirstEntities { get; set; } = 0;
-        public bool IncludeGames { get; set; } = false;
     }
 }

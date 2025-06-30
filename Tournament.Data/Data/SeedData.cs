@@ -1,57 +1,39 @@
-﻿using System;
+﻿using Bogus;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Tournament.Core.Entities;
 
-namespace Tournament.Data.Data
-{
-    public static class SeedData
-    {
-        public static void SeedTournamentData(TournamentApiContext db)
-        {
-            var tournaments = new List<Core.Entities.Tournament>
-            {
-                new Core.Entities.Tournament
-                {
-                    Title = "Spring Invitational 2025",
-                    StartDate = new DateTime(2025, 3, 15),
-                    Games = new List<Game>
-                    {
-                        new Game
-                        {
-                            Title = "Quarterfinal Match 1",
-                            StartDate = new DateTime(2025, 3, 16)
-                        },
-                        new Game
-                        {
-                            Title = "Quarterfinal Match 2",
-                            StartDate = new DateTime(2025, 3, 17)
-                        }
-                    }
-                },
-                new Core.Entities.Tournament
-                {
-                    Title = "Summer Cup 2025",
-                    StartDate = new DateTime(2025, 6, 10),
-                    Games = new List<Game>
-                    {
-                        new Game
-                        {
-                            Title = "Opening Game",
-                            StartDate = new DateTime(2025, 6, 11)
-                        },
-                        new Game
-                        {
-                            Title = "Semi-Final",
-                            StartDate = new DateTime(2025, 6, 15)
-                        }
-                    }
-                }
-            };
+namespace Tournament.Data.Data;
 
-            db.Tournament.AddRange(tournaments);
-        }
+public static class SeedData
+{
+    public static void SeedTournamentData(TournamentApiContext db)
+    {
+        var textInfo = CultureInfo.CurrentCulture.TextInfo;
+
+
+        var tournamentFaker = new Faker<Core.Entities.Tournament>()
+            .RuleFor(t => t.Title, f => textInfo.ToTitleCase($"{f.Commerce.Color()} {f.PickRandom(tournamentTypes)}"))
+            .RuleFor(t => t.StartDate, f => f.Date.Future())
+            .RuleFor(t => t.Games, (f, t) =>
+            {
+                var gameFaker = new Faker<Game>()
+                    .RuleFor(g => g.Title, f => $"Game: {f.Address.City()} vs {f.Address.City()}")
+                    .RuleFor(g => g.StartDate, f => f.Date.Between(t.StartDate, t.StartDate.AddMonths(3)));
+                return gameFaker.Generate(f.Random.Int(2, 6));
+            });
+
+        var tournaments = tournamentFaker.Generate(15);
+
+        db.Tournament.AddRange(tournaments);
     }
+    private static string[] tournamentTypes = {
+            "Tournament", "Cup", "Showdown", "Invitational", "Competition", "League", "Event", "Contest", "Series", "Clash"
+        };
+
 }
+

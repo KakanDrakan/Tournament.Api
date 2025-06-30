@@ -46,6 +46,10 @@ namespace Tournament.Data.Repositories
             {
                 query = dto.Descending ? query.OrderByDescending(t => t.Title) : query.OrderBy(t => t.Title);
             }
+            if (dto.PageSize.HasValue && dto.PageSize > 0)
+            {
+                query = query.Skip(dto.SkipFirstEntities ?? 0).Take(dto.PageSize.Value);
+            }
             return await query.ToListAsync();
         }
 
