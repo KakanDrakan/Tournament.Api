@@ -21,7 +21,7 @@ namespace Tournament.Api.Controllers
     {
         // GET: api/Games
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<GameDto>>> GetGames(int tournamentId, GetGameQueryDto dto)
+        public async Task<ActionResult<IEnumerable<GameDto>>> GetGames(int tournamentId, [FromQuery]GetGameQueryDto dto)
         {
             var games = mapper.Map<IEnumerable<GameDto>>(await UoW.GameRepository.GetAllAsync(tournamentId, dto));
 
@@ -121,8 +121,7 @@ namespace Tournament.Api.Controllers
                 }
             }
 
-            var createdGame = mapper.Map<GameDto>(game);
-            return CreatedAtAction(nameof(GetGames), new { id = game.Id, createdGame }, createdGame);
+            return Ok();
         }
 
         // DELETE: api/Games/5

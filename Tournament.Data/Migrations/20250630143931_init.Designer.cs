@@ -12,8 +12,8 @@ using Tournament.Data.Data;
 namespace Tournament.Data.Migrations
 {
     [DbContext(typeof(TournamentApiContext))]
-    [Migration("20250619122542_init")]
-    partial class Init
+    [Migration("20250630143931_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -67,7 +67,7 @@ namespace Tournament.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TournamentDetails");
+                    b.ToTable("Tournament");
                 });
 
             modelBuilder.Entity("Tournament.Core.Entities.Game", b =>

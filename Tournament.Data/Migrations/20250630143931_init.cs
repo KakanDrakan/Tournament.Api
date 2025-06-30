@@ -1,18 +1,20 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
+
+
 #nullable disable
 
 namespace Tournament.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "TournamentDetails",
+                name: "Tournament",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -22,7 +24,7 @@ namespace Tournament.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TournamentDetails", x => x.Id);
+                    table.PrimaryKey("PK_Tournament", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -39,9 +41,9 @@ namespace Tournament.Data.Migrations
                 {
                     table.PrimaryKey("PK_Game", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Game_TournamentDetails_TournamentId",
+                        name: "FK_Game_Tournament_TournamentId",
                         column: x => x.TournamentId,
-                        principalTable: "TournamentDetails",
+                        principalTable: "Tournament",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -59,7 +61,7 @@ namespace Tournament.Data.Migrations
                 name: "Game");
 
             migrationBuilder.DropTable(
-                name: "TournamentDetails");
+                name: "Tournament");
         }
     }
 }
