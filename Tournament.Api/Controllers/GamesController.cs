@@ -167,7 +167,7 @@ namespace Tournament.Api.Controllers
             TryValidateModel(gameToPatch);
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return ValidationProblem(ModelState);
             }
 
             mapper.Map(gameToPatch, game);

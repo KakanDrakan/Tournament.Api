@@ -1,11 +1,13 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Services.Contracts;
 using System.Threading.Tasks;
 using Tournament.Api.Extensions;
 using Tournament.Core.Repositories;
 using Tournament.Data.Data;
 using Tournament.Data.Repositories;
+using Tournament.Services;
 
 namespace Tournament.Api
 {
@@ -28,9 +30,7 @@ namespace Tournament.Api
                 .AddNewtonsoftJson()
                 .AddXmlDataContractSerializerFormatters();
 
-            builder.Services.AddScoped<ITournamentRepository, TournamentRepository>();
-            builder.Services.AddScoped<IGameRepository, GameRepository>();
-            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            AddServices(builder.Services);
 
 
             builder.Services.AddAutoMapper(typeof(TournamentMappings));
@@ -54,6 +54,25 @@ namespace Tournament.Api
             app.MapControllers();
 
             app.Run();
+        }
+
+        private static void AddServices(IServiceCollection services)
+        {
+            services.AddScoped<ITournamentRepository, TournamentRepository>();
+            services.AddScoped<IGameRepository, GameRepository>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<ITournamentService, TournamentService>();
+            services.AddScoped<IGameService, GameService>();
+            services.AddScoped<IServiceManager, ServiceManager>();
+            services.AddLazy<ITournamentService>();
+            services.AddLazy<IGameService>();
+        }
+    }
+    public static class ServiceCollectionExtensions
+    {
+        public static IServiceCollection AddLazy<TService>(this IServiceCollection services) where TService : class
+        {
+            return services.AddScoped(provider => new Lazy<TService>(() => provider.GetRequiredService<TService>()));
         }
     }
 }
