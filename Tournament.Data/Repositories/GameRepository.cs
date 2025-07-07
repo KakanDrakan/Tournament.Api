@@ -21,7 +21,7 @@ namespace Tournament.Data.Repositories
         {
             return await context.Game.AnyAsync(g => g.Id == id);
         }
-        public async Task<IEnumerable<Core.Entities.Game>> GetAllAsync(int? tournamentId, GetGameQueryDto dto)
+        public async Task<PagedResultDto<Core.Entities.Game>> GetAllAsync(int? tournamentId, GetGameQueryDto dto)
         {
             var query = context.Game.AsQueryable();
             if (tournamentId.HasValue)
@@ -36,7 +36,26 @@ namespace Tournament.Data.Repositories
             {
                 query = dto.Descending ? query.OrderByDescending(t => t.Title) : query.OrderBy(t => t.Title);
             }
-            return await query.ToListAsync();
+
+            int totalCount = await query.CountAsync();
+            if (totalCount == 0)
+            {
+                throw new KeyNotFoundException("No games found matching the specified criteria.");
+            }
+
+            int pageSize = dto.PageSize.HasValue && dto.PageSize > 0 ? dto.PageSize.Value : 20;
+            int page = dto.Page.HasValue && dto.Page > 0 ? dto.Page.Value : 1;
+            int skipAmount = (page - 1) * pageSize;
+            query = query.Skip(skipAmount).Take(pageSize);
+
+            var items = await query.ToListAsync();
+            return new PagedResultDto<Core.Entities.Game>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                PageSize = pageSize,
+                Page = page
+            };
         }
         public async Task<Core.Entities.Game> GetByIdAsync(int id)
         {

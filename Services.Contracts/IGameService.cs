@@ -4,7 +4,7 @@ namespace Services.Contracts
 {
     public interface IGameService
     {
-        public Task<IEnumerable<GameDto>> GetAllAsync(int tournamentId, GetGameQueryDto dto);
+        public Task<PagedResultDto<GameDto>> GetAllAsync(int tournamentId, GetGameQueryDto dto);
         public Task<GameDto?> GetByInputAsync(bool byTitle, string input);
         public Task<bool> AnyAsync(int id);
         public Task<(int id, GameDto createdGame)> AddAsync(int tournamentId, GameCreateDto dto);

@@ -43,9 +43,16 @@ namespace Tournament.Services
 
         }
 
-        public async Task<IEnumerable<GameDto>> GetAllAsync(int tournamentId,GetGameQueryDto dto)
+        public async Task<PagedResultDto<GameDto>> GetAllAsync(int tournamentId,GetGameQueryDto dto)
         {
-            return mapper.Map<IEnumerable<GameDto>>(await UoW.GameRepository.GetAllAsync(tournamentId, dto));
+            var result = await UoW.GameRepository.GetAllAsync(tournamentId, dto);
+            return new PagedResultDto<GameDto>
+            {
+                Items = result.Items.Select(g => mapper.Map<GameDto>(g)),
+                TotalCount = result.TotalCount,
+                PageSize = dto.PageSize ?? 20,
+                Page = dto.Page ?? 1
+            };
         }
 
         public async Task<GameDto?> GetByInputAsync(bool byTitle, string input)

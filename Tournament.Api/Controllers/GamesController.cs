@@ -24,9 +24,25 @@ namespace Tournament.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<GameDto>>> GetGames(int tournamentId, [FromQuery]GetGameQueryDto dto)
         {
-            var games = await manager.GameService.GetAllAsync(tournamentId, dto);
+            try
+            { 
+                var games = await manager.GameService.GetAllAsync(tournamentId, dto);
 
-            return Ok(games);
+                Response.Headers.Append("X-Total-Count", games.TotalCount.ToString());
+                Response.Headers.Append("X-Page-Size", games.PageSize.ToString());
+                Response.Headers.Append("X-Page", games.Page.ToString());
+                Response.Headers.Append("X-Total-Pages", games.TotalPages.ToString());
+
+                return Ok(games);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound($"No games found for tournament with ID {tournamentId}.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while retrieving games: {ex.Message}");
+            }
         }
 
         // GET: api/Games/5

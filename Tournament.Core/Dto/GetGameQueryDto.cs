@@ -11,7 +11,7 @@ namespace Tournament.Core.Dto
         public string? Title { get; set; }
         public bool OrderByTitle { get; set; } = false;
         public bool Descending { get; set; } = false;
-        public int? Page { get; set; } = 0;
-        public int? PageSize { get; set; } = 0;
+        public int? Page { get; set; } = 1;
+        public int? PageSize { get; set; } = 5;
     }
 }
