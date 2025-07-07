@@ -7,9 +7,16 @@ namespace Tournament.Services
 {
     public class TournamentService(IUnitOfWork UoW, IMapper mapper) : ITournamentService
     {
-        public async Task<IEnumerable<TournamentDto>> GetAllAsync(GetTournamentQueryDto dto)
+        public async Task<PagedResultDto<TournamentDto>> GetAllAsync(GetTournamentQueryDto dto)
         {
-            return mapper.Map<IEnumerable<TournamentDto>>(await UoW.TournamentRepository.GetAllAsync(dto));
+            var result = await UoW.TournamentRepository.GetAllAsync(dto);
+            return new PagedResultDto<TournamentDto>
+                {
+                Items = result.Items.Select(t => mapper.Map<TournamentDto>(t)),
+                TotalCount = result.TotalCount,
+                PageSize = dto.PageSize ?? 20,
+                Page = dto.Page ?? 1
+            };
         }
 
         public async Task<TournamentDto?> GetByIdAsync(int id)

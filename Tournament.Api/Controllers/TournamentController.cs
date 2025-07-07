@@ -24,12 +24,19 @@ namespace Tournament.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TournamentDto>>> GetTournamentDetails([FromQuery] GetTournamentQueryDto dto)
         {
-            var tournaments = await manager.TournamentService.GetAllAsync(dto);
-            if (!tournaments.Any())
+            var result = await manager.TournamentService.GetAllAsync(dto);
+            
+            if (!result.Items.Any())
             {
                 return (!dto.Title.IsNullOrEmpty() || dto.FromYear.HasValue || dto.ToYear.HasValue) ? NotFound("Could not find any tournaments with those restrictions.") : NotFound("There are no tournaments in the database");
             }
-            return Ok(tournaments);
+
+            Response.Headers.Append("X-Total-Count", result.TotalCount.ToString());
+            Response.Headers.Append("X-Page-Size", result.PageSize.ToString());
+            Response.Headers.Append("X-Page", result.Page.ToString());
+            Response.Headers.Append("X-Total-Pages", result.TotalPages.ToString());
+
+            return Ok(result.Items);
         }
 
         // GET: api/TournamentDetails/5
