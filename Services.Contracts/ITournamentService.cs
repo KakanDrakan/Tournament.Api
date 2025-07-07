@@ -15,7 +15,7 @@ namespace Services.Contracts
         public Task<(int id, TournamentDto createdTournament)> AddAsync(TournamentCreateDto dto);
         public Task<bool> UpdateAsync(TournamentUpdateDto dto);
         public Task<bool> DeleteAsync(int id);
-        public Task<TournamentUpdateDto> MapToUpdateDtoAsync(int id, TournamentDto dto);
+        public Task<TournamentUpdateDto> MapToUpdateDtoAsync(int id);
         public Task PatchAsync(int id, TournamentUpdateDto patchDto);
     }
 }

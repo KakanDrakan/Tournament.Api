@@ -26,7 +26,7 @@ namespace Tournament.Data.Repositories
             var query = context.Game.AsQueryable();
             if (tournamentId.HasValue)
             {
-                return query.Where(g => g.TournamentId == tournamentId.Value);
+                query = query.Where(g => g.TournamentId == tournamentId.Value);
             }
             if (!string.IsNullOrEmpty(dto.Title))
             {

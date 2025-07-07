@@ -56,7 +56,7 @@ namespace Tournament.Services
             await UoW.SaveChangesAsync();
             return true;
         }
-        public async Task<TournamentUpdateDto> MapToUpdateDtoAsync(int id, TournamentDto dto)
+        public async Task<TournamentUpdateDto> MapToUpdateDtoAsync(int id)
         {
             var tournament = await UoW.TournamentRepository.GetByIdAsync(id);
             return mapper.Map<TournamentUpdateDto>(tournament);
@@ -65,6 +65,7 @@ namespace Tournament.Services
         {
             var tournament = await UoW.TournamentRepository.GetByIdAsync(id);
             mapper.Map(patchDto, tournament);
+            UoW.TournamentRepository.Update(tournament);
             await UoW.SaveChangesAsync();
         }
     }

@@ -134,7 +134,7 @@ namespace Tournament.Api.Controllers
                 return NotFound();
             }
 
-            var tournamentToPatch = await manager.TournamentService.MapToUpdateDtoAsync(id, tournament);
+            var tournamentToPatch = await manager.TournamentService.MapToUpdateDtoAsync(id);
             patchDoc.ApplyTo(tournamentToPatch, ModelState);
 
             TryValidateModel(tournamentToPatch);

@@ -48,7 +48,8 @@ namespace Tournament.Data.Repositories
             }
             if (dto.PageSize.HasValue && dto.PageSize > 0)
             {
-                query = query.Skip(dto.SkipFirstEntities ?? 0).Take(dto.PageSize.Value);
+                var skipAmount = dto.Page * dto.PageSize;
+                query = query.Skip(skipAmount ?? 0).Take(dto.PageSize.Value);
             }
             return await query.ToListAsync();
         }
