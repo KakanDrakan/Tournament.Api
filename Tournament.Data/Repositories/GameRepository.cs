@@ -57,15 +57,13 @@ namespace Tournament.Data.Repositories
                 Page = page
             };
         }
-        public async Task<Core.Entities.Game> GetByIdAsync(int id)
+        public async Task<Core.Entities.Game?> GetByIdAsync(int id)
         {
-            return await context.Game.FindAsync(id)
-                ?? throw new KeyNotFoundException($"Game with ID {id} not found.");
+            return await context.Game.FindAsync(id);
         }
-        public async Task<Core.Entities.Game> GetByTitleAsync(string title)
+        public async Task<Core.Entities.Game?> GetByTitleAsync(string title)
         {
-            return await context.Game.FirstOrDefaultAsync(g => g.Title == title)
-                ?? throw new KeyNotFoundException($"Game with title '{title}' not found.");
+            return await context.Game.FirstOrDefaultAsync(g => g.Title == title);
         }
         public void Remove(Core.Entities.Game game)
         {

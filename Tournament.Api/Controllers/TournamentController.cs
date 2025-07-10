@@ -45,11 +45,6 @@ namespace Tournament.Api.Controllers
         {
             var tournament = await manager.TournamentService.GetByIdAsync(id);
 
-            if (tournament == null)
-            {
-                return NotFound();
-            }
-
             return tournament;
         }
 
@@ -62,25 +57,8 @@ namespace Tournament.Api.Controllers
             {
                 return BadRequest();
             }
-            try
-            {
-                var wasFound = await manager.TournamentService.UpdateAsync(tournament);
-                if (!wasFound)
-                {
-                    return NotFound($"Tournament with Id {id} not found.");
-                }
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!await TournamentExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+
+            await manager.TournamentService.UpdateAsync(tournament);
 
             return NoContent();
         }
@@ -111,18 +89,8 @@ namespace Tournament.Api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTournamentDetails(int id)
         {
-            try
-            {
-                var wasFound = await manager.TournamentService.DeleteAsync(id);
-                if (!wasFound)
-                {
-                    return NotFound();
-                }
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while deleting the tournament: {ex.Message}");
-            }
+            
+            await manager.TournamentService.DeleteAsync(id);
 
             return NoContent();
         }

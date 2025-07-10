@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Tournament.Api.Exceptions;
 using Tournament.Core.Dto;
 using Tournament.Core.Entities;
 using Tournament.Core.Repositories;
@@ -30,16 +31,15 @@ namespace Tournament.Services
             return await UoW.GameRepository.AnyAsync(id);
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task DeleteAsync(int id)
         {
             var game = await UoW.GameRepository.GetByIdAsync(id);
-            if(game == null)
+            if (game == null)
             {
-                return false; // Game not found
+                throw new GameIdNotFoundException(id);
             }
             UoW.GameRepository.Remove(game);
             await UoW.SaveChangesAsync();
-            return true; // Game deleted successfully
 
         }
 
@@ -55,22 +55,32 @@ namespace Tournament.Services
             };
         }
 
-        public async Task<GameDto?> GetByInputAsync(bool byTitle, string input)
+        public async Task<GameDto> GetByInputAsync(bool byTitle, string input)
         {
             if (byTitle)
             {
-                var game = await UoW.GameRepository.GetByTitleAsync(input);
-                return game == null ? null : mapper.Map<GameDto>(game);
+                var game = await GetByTitleAsync(input);
+                return mapper.Map<GameDto>(game);
             }
             else if (int.TryParse(input, out int id))
             {
-                var game = await UoW.GameRepository.GetByIdAsync(id);
-                return game == null ? null : mapper.Map<GameDto>(game);
+                var game = await GetByIdAsync(id);
+                return mapper.Map<GameDto>(game);
             }
             else
             {
-                return null;
+                throw new ArgumentException("Please input only integers when byTitle is set to false");
             }
+        }
+        public async Task<GameDto> GetByIdAsync(int id)
+        {
+            var game = await UoW.GameRepository.GetByIdAsync(id) ?? throw new GameIdNotFoundException(id);
+            return mapper.Map<GameDto>(game);
+        }
+        public async Task<GameDto> GetByTitleAsync(string title)
+        {
+            var game = await UoW.GameRepository.GetByTitleAsync(title) ?? throw new GameTitleNotFoundException(title);
+            return mapper.Map<GameDto>(game);
         }
 
         public async Task<GameUpdateDto> MapToUpdateDtoAsync(int id)
@@ -78,7 +88,7 @@ namespace Tournament.Services
             var game = await UoW.GameRepository.GetByIdAsync(id);
             if (game == null)
             {
-                throw new KeyNotFoundException($"Game with ID {id} not found.");
+                throw new GameIdNotFoundException(id);
             }
             return mapper.Map<GameUpdateDto>(game);
         }
@@ -86,22 +96,25 @@ namespace Tournament.Services
         public async Task PatchAsync(int id, GameUpdateDto patchDto)
         {
             var game = await UoW.GameRepository.GetByIdAsync(id);
+            if (game == null)
+            {
+                throw new GameIdNotFoundException(id);
+            }
             mapper.Map(patchDto, game);
             UoW.GameRepository.Update(game);
             await UoW.SaveChangesAsync();
         }
 
-        public async Task<bool> UpdateAsync(GameUpdateDto dto)
+        public async Task UpdateAsync(GameUpdateDto dto)
         {
             var game = await UoW.GameRepository.GetByIdAsync(dto.Id);
             if (game == null)
             {
-                return false; // Game not found
+                throw new GameIdNotFoundException(dto.Id); //should probably throw something else because if game is null something more serious has happened
             }
             mapper.Map(dto, game);
             UoW.GameRepository.Update(game);
             await UoW.SaveChangesAsync();
-            return true; // Game updated successfully
         }
     }
 }

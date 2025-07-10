@@ -22,27 +22,18 @@ namespace Tournament.Api.Controllers
     {
         // GET: api/Games
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<GameDto>>> GetGames(int tournamentId, [FromQuery]GetGameQueryDto dto)
+        public async Task<ActionResult<IEnumerable<GameDto>>> GetGames(int tournamentId, [FromQuery] GetGameQueryDto dto)
         {
-            try
-            { 
-                var games = await manager.GameService.GetAllAsync(tournamentId, dto);
 
-                Response.Headers.Append("X-Total-Count", games.TotalCount.ToString());
-                Response.Headers.Append("X-Page-Size", games.PageSize.ToString());
-                Response.Headers.Append("X-Page", games.Page.ToString());
-                Response.Headers.Append("X-Total-Pages", games.TotalPages.ToString());
+            var games = await manager.GameService.GetAllAsync(tournamentId, dto);
 
-                return Ok(games);
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound($"No games found for tournament with ID {tournamentId}.");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while retrieving games: {ex.Message}");
-            }
+            Response.Headers.Append("X-Total-Count", games.TotalCount.ToString());
+            Response.Headers.Append("X-Page-Size", games.PageSize.ToString());
+            Response.Headers.Append("X-Page", games.Page.ToString());
+            Response.Headers.Append("X-Total-Pages", games.TotalPages.ToString());
+
+            return Ok(games);
+
         }
 
         // GET: api/Games/5
@@ -56,7 +47,7 @@ namespace Tournament.Api.Controllers
             var game = await manager.GameService.GetByInputAsync(byTitle, input);
             if (game == null)
             {
-                return NotFound($"Game with {(byTitle ? "title" : "ID")} '{input}' not found.");
+                return NotFound($"Game with {(byTitle ? "title" : "ID")} '{input}' was not found.");
             }
             return Ok(game);
         }
@@ -71,25 +62,7 @@ namespace Tournament.Api.Controllers
                 return BadRequest();
             }
 
-            try
-            {
-                var wasFound = await manager.GameService.UpdateAsync(game);
-                if (!wasFound)
-                {
-                    return NotFound($"Game with ID {id} not found.");
-                }
-            }
-            catch (Exception)
-            {
-                if (!await GameExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while updating the database.");
-                }
-            }
+            await manager.GameService.UpdateAsync(game);
 
             return NoContent();
         }
@@ -121,18 +94,9 @@ namespace Tournament.Api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteGame(int id)
         {
-            try 
-            { 
-                await manager.GameService.DeleteAsync(id);
-            }
-            catch(KeyNotFoundException)
-            {
-                return NotFound($"Game with ID {id} not found.");
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while saving to the database.");
-            }
+
+            await manager.GameService.DeleteAsync(id);
+
 
             return NoContent();
         }
@@ -145,33 +109,16 @@ namespace Tournament.Api.Controllers
                 return BadRequest("Patch document cannot be null.");
             }
 
-            try
-            {
-                var gameToPatch = await manager.GameService.MapToUpdateDtoAsync(id);
-                patchDoc.ApplyTo(gameToPatch, ModelState);
+            var gameToPatch = await manager.GameService.MapToUpdateDtoAsync(id);
+            patchDoc.ApplyTo(gameToPatch, ModelState);
 
-                TryValidateModel(gameToPatch);
-                if (!ModelState.IsValid)
-                {
-                    return ValidationProblem(ModelState);
-                }
-                await manager.GameService.PatchAsync(id, gameToPatch);
-            }
-            catch (KeyNotFoundException ex)
+            TryValidateModel(gameToPatch);
+            if (!ModelState.IsValid)
             {
-                return NotFound($"{ex.Message}");
+                return ValidationProblem(ModelState);
             }
-            catch (Exception ex)
-            {
-                if (!await GameExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while updating the database. {ex.Message}");
-                }
-            }
+            await manager.GameService.PatchAsync(id, gameToPatch);
+
             return NoContent();
         }
 

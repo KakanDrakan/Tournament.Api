@@ -13,8 +13,8 @@ namespace Tournament.Core.Repositories
         void Add(Game game);
         Task<bool> AnyAsync(int id);
         Task<PagedResultDto<Game>> GetAllAsync(int? tournamentId, GetGameQueryDto dto);
-        Task<Game> GetByIdAsync(int id);
-        Task<Game> GetByTitleAsync(string title);
+        Task<Game?> GetByIdAsync(int id);
+        Task<Game?> GetByTitleAsync(string title);
         void Remove(Game game);
         void Update(Game game);
     }

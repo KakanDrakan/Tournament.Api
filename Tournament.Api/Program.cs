@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Services.Contracts;
 using System.Threading.Tasks;
+using Torunament.API.Extensions;
 using Tournament.Api.Extensions;
 using Tournament.Core.Repositories;
 using Tournament.Data.Data;
@@ -38,6 +39,8 @@ namespace Tournament.Api
             var app = builder.Build();
 
             await app.SeedDataAsync();
+
+            //app.ConfigureExceptionHandler();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
